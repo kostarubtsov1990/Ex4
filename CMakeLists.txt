@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(Ex4)
+project(Ex4Client)
 
 set(CMAKE_CXX_STANDARD 98)
 
@@ -32,12 +32,12 @@ set(SOURCE_FILES
         )
 
 add_library(reversiGame STATIC ${SOURCE_FILES} ${HEADER_FILES})
-#set(SOURCE_FILES main.cpp src/Board.cpp include/Board.h src/ReversiGame.cpp include/ReversiGame.h src/Game.cpp include/Game.h src/GameLogic.cpp include/GameLogic.h src/Cell.cpp include/Cell.h src/GameFlow.cpp include/GameFlow.h src/MultiPlayerFlow.cpp include/MultiPlayerFlow.h src/DefaultLogic.cpp include/DefaultLogic.h src/SinglePlayerFlow.cpp include/SinglePlayerFlow.h src/GameMenu.cpp include/GameMenu.h src/ReversiGameMenu.cpp include/ReversiGameMenu.h)
-#add_executable(Ex3 ${SOURCE_FILES})
 
 set(SOURCE_FILES main.cpp)
-add_executable(Ex4 ${SOURCE_FILES})
+add_executable(Ex4Client ${SOURCE_FILES})
 
-target_link_libraries(Ex4 reversiGame)
+add_subdirectory(test)
+
+target_link_libraries(Ex4Client reversiGame)
 
 

@@ -14,23 +14,26 @@ MultiPlayerFlow::MultiPlayerFlow() {
     
 }
 */
-MultiPlayerFlow::MultiPlayerFlow(Game* game): GameFlow::GameFlow(game){}
+MultiPlayerFlow::MultiPlayerFlow(Game* game, gameType type): type(type),  GameFlow::GameFlow(game){}
 
 void MultiPlayerFlow::Run() {
+    //if flag == 1 (ex2) this code will be in RunLocal
+        GameLogic* logic = game->GetLogic();
+        Board* board = game->GetBoard();
 
-    GameLogic* logic = game->GetLogic();
-    Board* board = game->GetBoard();
+        cout << "current board:" << endl << endl;
+        board->printBoard();
 
-    cout << "current board:" << endl << endl;
-    board->printBoard();
+        //each player plays its turn till game's over.
+        while (!logic->IsGameOver(board)) {//?
+            RunCurrentTurnOfTheGame(xplayer, X);
+            RunCurrentTurnOfTheGame(oplayer, O);
+        }
+        //declare the winner of the game (or draw)
+        logic->DeclareWinner(board);
+    //else (ex4) RunRemote
 
-    //each player plays its turn till game's over.
-    while (!logic->IsGameOver(board)) {//?
-        RunCurrentTurnOfTheGame(xplayer, X);
-        RunCurrentTurnOfTheGame(oplayer, O);
-    }
-    //declare the winner of the game (or draw)
-    logic->DeclareWinner(board);
+
 }
 
 void MultiPlayerFlow::RunCurrentTurnOfTheGame(playerIdentifier id,

@@ -18,14 +18,22 @@
  * by the current player, with printings to the screen and updatings of the
  * board till game's over.
  */
+
+enum gameType {local, remote};
+
 class MultiPlayerFlow : public GameFlow {
 public:
 //    MultiPlayerFlow();
-    MultiPlayerFlow(Game* game);
+    MultiPlayerFlow(Game* game, gameType type);
     virtual void Run();
     ~MultiPlayerFlow();
 
 private:
+    
+    gameType type;
+    
+    void RunLocal();
+    void RunRemote();
     void PrintHandler(playerIdentifier id, const vector<Cell>& possibleLocations) const;
     void RunCurrentTurnOfTheGame(playerIdentifier id, boardContent symbol);
     Cell InputHandler() const;
