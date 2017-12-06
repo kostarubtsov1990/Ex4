@@ -35,7 +35,7 @@ private:
     void RunLocal();
     void RunRemote();
     void PrintHandler(playerIdentifier id, const vector<Cell>& possibleLocations) const;
-    void RunCurrentTurnOfTheGame(playerIdentifier id, boardContent symbol);
+    string RunCurrentTurnOfTheGame(playerIdentifier id, boardContent symbol);
     Cell InputHandler() const;
 };
 

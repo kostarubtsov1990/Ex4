@@ -6,9 +6,14 @@
  */
 
 #include <cstdlib>
+#include <zconf.h>
+#include <cstring>
+#include <sstream>
 #include "../include/MultiPlayerFlow.h"
-#include "../include/ReversiGame.h"
+#include "../include/GameClient.h"
+#define BUF_SIZE 1024
 
+using namespace std;
 /*
 MultiPlayerFlow::MultiPlayerFlow() {
     
@@ -17,26 +22,81 @@ MultiPlayerFlow::MultiPlayerFlow() {
 MultiPlayerFlow::MultiPlayerFlow(Game* game, gameType type): type(type),  GameFlow::GameFlow(game){}
 
 void MultiPlayerFlow::Run() {
-    //if flag == 1 (ex2) this code will be in RunLocal
-        GameLogic* logic = game->GetLogic();
-        Board* board = game->GetBoard();
-
-        cout << "current board:" << endl << endl;
-        board->printBoard();
-
-        //each player plays its turn till game's over.
-        while (!logic->IsGameOver(board)) {//?
-            RunCurrentTurnOfTheGame(xplayer, X);
-            RunCurrentTurnOfTheGame(oplayer, O);
-        }
-        //declare the winner of the game (or draw)
-        logic->DeclareWinner(board);
-    //else (ex4) RunRemote
-
-
+    //This will run one of the possible game types of multi player.
+    switch (type){
+        case local:
+            RunLocal();
+        case remote:
+            RunRemote();
+    }
 }
 
-void MultiPlayerFlow::RunCurrentTurnOfTheGame(playerIdentifier id,
+void MultiPlayerFlow::RunLocal() {
+    GameLogic* logic = game->GetLogic();
+    Board* board = game->GetBoard();
+
+    cout << "current board:" << endl << endl;
+    board->printBoard();
+
+    //each player plays its turn till game's over.
+    while (!logic->IsGameOver(board)) {//?
+        RunCurrentTurnOfTheGame(xplayer, X);
+        RunCurrentTurnOfTheGame(oplayer, O);
+    }
+    //declare the winner of the game (or draw)
+    logic->DeclareWinner(board);
+}
+
+void MultiPlayerFlow::RunRemote() {
+    playerIdentifier player;
+    boardContent playerSymbol;
+    boardContent opponentPlayerSymbol;
+    GameLogic* logic = game->GetLogic();
+    Board* board = game->GetBoard();
+
+    char answerBuffer [BUF_SIZE];
+    int gameClientSocket;
+
+    GameClient gameClient("127.0.0.1",8000);
+    try {
+        gameClientSocket = gameClient.connectToServer();
+    }catch (const char* msg) {
+        cout << "Failed to connect to server. Reason: " << msg << endl;
+        exit(-1);
+    }
+
+    int n = read(gameClientSocket, answerBuffer, sizeof(answerBuffer));
+
+
+    if (strcmp(answerBuffer, "wait_for_opponent") == 0){
+        player = xplayer;
+        playerSymbol = X;
+        opponentPlayerSymbol = O;
+        n = read(gameClientSocket, answerBuffer, sizeof(answerBuffer));
+    }
+    else if (strcmp(answerBuffer, "Wait_for_first_move") == 0) {
+        player = oplayer;
+        playerSymbol = O;
+        opponentPlayerSymbol = X;
+        n = read(gameClientSocket, answerBuffer, sizeof(answerBuffer));
+        logic->UpdateBoard(board, atoi(&answerBuffer[0]), atoi(&answerBuffer[1]), playerSymbol);
+    } else {
+        cout<<"Writing error occurred";
+        return;
+    }
+
+    //each player plays its turn till game's over.
+    while (!logic->IsGameOver(board)) {
+        string result = RunCurrentTurnOfTheGame(player, playerSymbol);
+        //To add failure condition.
+        int n = write(gameClientSocket, result.c_str(), strlen(result.c_str()) + 1);
+        n = read(gameClientSocket, answerBuffer, sizeof(answerBuffer));
+        logic->UpdateBoard(board, atoi(&answerBuffer[0]), atoi(&answerBuffer[1]), opponentPlayerSymbol);
+    }
+    //To add finishing massages to close the opponent client.
+}
+
+string MultiPlayerFlow::RunCurrentTurnOfTheGame(playerIdentifier id,
                                                boardContent symbol) {
     GameLogic* logic = game->GetLogic();
     Board* board = game->GetBoard();
@@ -46,7 +106,7 @@ void MultiPlayerFlow::RunCurrentTurnOfTheGame(playerIdentifier id,
     PrintHandler(id,logic->GetMoves());
     //if no possible moves, pass turn to the second player
     if (logic->GetMoves().empty()) {
-        return;
+        return "no_moves";
     }
     //chosen cell of current player
     Cell chosenCell = this->InputHandler();
@@ -59,6 +119,12 @@ void MultiPlayerFlow::RunCurrentTurnOfTheGame(playerIdentifier id,
     logic->UpdateBoard(board,chosenCell.getX(),chosenCell.getY(),symbol);
     cout << "current board:" << endl << endl;
     board->printBoard();
+
+    ostringstream ss;
+    ss << chosenCell.getX() << chosenCell.getY();
+    return ss.str();
+
+
 }
 
 void MultiPlayerFlow::PrintHandler(playerIdentifier id,
