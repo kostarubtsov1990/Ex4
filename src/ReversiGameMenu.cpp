@@ -13,7 +13,8 @@ void ReversiGameMenu::Start() {
     cout<<"~Welcome to Reversi Game~"<<endl<<endl;
     cout<<"Please choose below options:"<<endl;
     cout<<"1.Single Player"<<endl;
-    cout<<"2.Multi Player"<<endl<<endl;
+    cout<<"2.Local Multi Player"<<endl;
+    cout<<"3.Remote Multi Player"<<endl<<endl;
     cout<<"Press the number and enter to continue: ";
 
     int gameOption;

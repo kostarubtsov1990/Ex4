@@ -6,7 +6,7 @@
  */
 
 #include <cstdlib>
-#include <zconf.h>
+#include <unistd.h>
 #include <cstring>
 #include <sstream>
 #include "../include/MultiPlayerFlow.h"
@@ -49,15 +49,18 @@ void MultiPlayerFlow::RunLocal() {
 
 void MultiPlayerFlow::RunRemote() {
     playerIdentifier player;
+    playerIdentifier opponentPlayer;
     boardContent playerSymbol;
     boardContent opponentPlayerSymbol;
     GameLogic* logic = game->GetLogic();
     Board* board = game->GetBoard();
 
     char answerBuffer [BUF_SIZE];
+    bzero(&answerBuffer,sizeof(answerBuffer));
+
     int gameClientSocket;
 
-    GameClient gameClient("127.0.0.1",8000);
+    GameClient gameClient("127.0.0.1",8001);
     try {
         gameClientSocket = gameClient.connectToServer();
     }catch (const char* msg) {
@@ -69,31 +72,71 @@ void MultiPlayerFlow::RunRemote() {
 
 
     if (strcmp(answerBuffer, "wait_for_opponent") == 0){
+
         player = xplayer;
+        opponentPlayer = oplayer;
         playerSymbol = X;
         opponentPlayerSymbol = O;
+
+        cout << "Wait for opponent..." << endl << endl;
+
         n = read(gameClientSocket, answerBuffer, sizeof(answerBuffer));
     }
     else if (strcmp(answerBuffer, "Wait_for_first_move") == 0) {
         player = oplayer;
+        opponentPlayer = xplayer;
         playerSymbol = O;
         opponentPlayerSymbol = X;
+
+        cout << "Wait for first move..." << endl << endl;
+
         n = read(gameClientSocket, answerBuffer, sizeof(answerBuffer));
-        logic->UpdateBoard(board, atoi(&answerBuffer[0]), atoi(&answerBuffer[1]), playerSymbol);
+        logic->CheckPossibleMoves(board, opponentPlayer);
+        logic->UpdateBoard(board, atoi(&answerBuffer[0]), atoi(&answerBuffer[2]), opponentPlayerSymbol);
+        //board->printBoard();
+        //cout << endl << endl;
     } else {
         cout<<"Writing error occurred";
         return;
     }
+
+    cout << "current board:" << endl << endl;
+    board->printBoard();
 
     //each player plays its turn till game's over.
     while (!logic->IsGameOver(board)) {
         string result = RunCurrentTurnOfTheGame(player, playerSymbol);
         //To add failure condition.
         int n = write(gameClientSocket, result.c_str(), strlen(result.c_str()) + 1);
+
+        if (player == xplayer)
+            cout << "Wait for second player to take a move..." << endl << endl;
+        else
+            cout << "Wait for first player to take a move..." << endl << endl;
+
+
         n = read(gameClientSocket, answerBuffer, sizeof(answerBuffer));
-        logic->UpdateBoard(board, atoi(&answerBuffer[0]), atoi(&answerBuffer[1]), opponentPlayerSymbol);
+
+        if (strcmp(answerBuffer, "END") == 0) {
+            logic->DeclareWinner(board);
+            close(gameClientSocket);
+            return;;
+        }
+        if (strcmp(answerBuffer, "no_moves")) {
+            logic->CheckPossibleMoves(board, opponentPlayer);
+            logic->UpdateBoard(board, atoi(&answerBuffer[0]), atoi(&answerBuffer[2]), opponentPlayerSymbol);
+        }
+        cout << "current board:" << endl << endl;
+        board->printBoard();
     }
-    //To add finishing massages to close the opponent client.
+
+    string endMassage = "END";
+    n = write(gameClientSocket, endMassage.c_str(), strlen(endMassage.c_str()) + 1);
+
+    //declare the winner of the game (or draw)
+    logic->DeclareWinner(board);
+
+    close(gameClientSocket);
 }
 
 string MultiPlayerFlow::RunCurrentTurnOfTheGame(playerIdentifier id,
@@ -121,7 +164,7 @@ string MultiPlayerFlow::RunCurrentTurnOfTheGame(playerIdentifier id,
     board->printBoard();
 
     ostringstream ss;
-    ss << chosenCell.getX() << chosenCell.getY();
+    ss << chosenCell.getX() << "," << chosenCell.getY();
     return ss.str();
 
 
