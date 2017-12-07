@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <sstream>
+#include <fstream>
 #include "../include/MultiPlayerFlow.h"
 #include "../include/GameClient.h"
 #define BUF_SIZE 1024
@@ -61,11 +62,21 @@ void MultiPlayerFlow::RunRemote() {
     char answerBuffer [BUF_SIZE];
     bzero(&answerBuffer,sizeof(answerBuffer));
 
-    int gameClientSocket;//?
-    //load from xml
+    int gameClientSocket;
+
+    const char* fileName = "settings.txt";
+    string ip;
+    string portString;
+    ifstream myfile(fileName);
+    getline(myfile, ip);
+    getline(myfile, portString);
+
+    int port = atoi(portString.c_str());
+
+
     //first argument is the IP of the computer which the server runs on.
     //second argument is the port of the server
-    GameClient gameClient("127.0.0.1",8000);
+    GameClient gameClient(ip.c_str(), port);
     try {
         //sort of file descriptor. after this line, client is connected to server
         gameClientSocket = gameClient.connectToServer();
