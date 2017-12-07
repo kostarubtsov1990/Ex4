@@ -67,9 +67,13 @@ void MultiPlayerFlow::RunRemote() {
     int gameClientSocket;
 
     const char *fileName = "student.txt";
-    SerializeObject <Settings> serializeObject;
+    SerializeObject serializeObject;
     Settings settings;
 
+
+    string line;
+    string boardStr;
+    ifstream myfile(fileName);
     //Check if file does not exist.
     ifstream f(fileName);
     if (!f.good()) {

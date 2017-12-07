@@ -10,6 +10,8 @@
 #include <boost/serialization/nvp.hpp>
 #include <iostream>
 
+using namespace std;
+
 class Settings {
 public:
     Settings(): domain_name(""), port(0) {}
