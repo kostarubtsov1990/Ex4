@@ -9,8 +9,11 @@
 #include <unistd.h>
 #include <cstring>
 #include <sstream>
+#include <fstream>
 #include "../include/MultiPlayerFlow.h"
 #include "../include/GameClient.h"
+#include "../include/Settings.h"
+#include "../include/SerializeObject.h"
 #define BUF_SIZE 1024
 
 using namespace std;
@@ -61,7 +64,24 @@ void MultiPlayerFlow::RunRemote() {
     char answerBuffer [BUF_SIZE];
     bzero(&answerBuffer,sizeof(answerBuffer));
 
-    int gameClientSocket;//?
+    int gameClientSocket;
+
+    const char *fileName = "student.txt";
+    SerializeObject <Settings> serializeObject;
+    Settings settings;
+
+    //Check if file does not exist.
+    ifstream f(fileName);
+    if (!f.good()) {
+        //Set default settings.
+        Settings defaults("127.0.0.1", 8000);
+        settings = defaults;
+        serializeObject.serializeToXML(settings, fileName);
+    } else{
+        Settings fromFile = serializeObject.deserializeFromXML(fileName);
+        settings = fromFile;
+    }
+
     //load from xml
     //first argument is the IP of the computer which the server runs on.
     //second argument is the port of the server

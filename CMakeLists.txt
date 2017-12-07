@@ -33,7 +33,7 @@ set(SOURCE_FILES
 
 add_library(reversiGame STATIC ${SOURCE_FILES} ${HEADER_FILES})
 
-set(SOURCE_FILES main.cpp src/GameClient.cpp include/GameClient.h)
+set(SOURCE_FILES main.cpp src/GameClient.cpp include/GameClient.h include/Settings.h src/SerializeObject.cpp include/SerializeObject.h)
 add_executable(Ex4Client ${SOURCE_FILES})
 
 add_subdirectory(test)
