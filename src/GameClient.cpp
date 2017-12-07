@@ -51,4 +51,5 @@ int GameClient::connectToServer() {
         throw "Error connectiong to server";
     }
     cout << "Connected to server" << endl;
+    return clientSocket;
 }
