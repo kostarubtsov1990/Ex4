@@ -64,6 +64,7 @@ void MultiPlayerFlow::RunRemote() {
 
     int gameClientSocket;
 
+    //Read the settings from file.
     const char* fileName = "settings.txt";
     string ip;
     string portString;
