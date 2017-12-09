@@ -155,18 +155,23 @@ void MultiPlayerFlow::RunRemote() {
             return;
         }
         //if its opponent performed a step, then he updates its own board with the opponent step.
-        if (strcmp(answerBuffer, "no_moves")) {
+        else if (strcmp(answerBuffer, "no_moves")) {
             logic->CheckPossibleMoves(board, opponentPlayer);
             logic->UpdateBoard(board, atoi(&answerBuffer[0]), atoi(&answerBuffer[2]), opponentPlayerSymbol);
-        }
-        //current client prints its updated board (updated with its opponent step)
-        cout << "current board:" << endl << endl;
-        board->printBoard();
 
-        if (opponentPlayer == xplayer)
-            cout << "X played (" << ++answerBuffer[0] << "," << ++answerBuffer[2] << ")" << endl;
-        else
-            cout << "O played (" << ++answerBuffer[0] << "," << ++answerBuffer[2] << ")" << endl;
+            //current client prints its updated board (updated with its opponent step)
+            cout << "current board:" << endl << endl;
+            board->printBoard();
+
+            if (opponentPlayer == xplayer)
+                cout << "X played (" << ++answerBuffer[0] << "," << ++answerBuffer[2] << ")" << endl;
+            else
+                cout << "O played (" << ++answerBuffer[0] << "," << ++answerBuffer[2] << ")" << endl;
+        //answerbuffer is "no moves"
+        } else{
+            cout << "Opponent player had no possible moves." << endl;
+        }
+
 
     }
     //this code will be done by only one of the clients.
