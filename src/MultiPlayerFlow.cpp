@@ -127,6 +127,9 @@ void MultiPlayerFlow::RunRemote() {
     cout << "current board:" << endl << endl;
     board->printBoard();
 
+    if (opponentPlayer == xplayer)
+        cout << "X played (" << ++answerBuffer[0] << "," << ++answerBuffer[2] << ")" << endl;
+
     //each player plays its turn till game's over.
     while (!logic->IsGameOver(board)) {
         //current player performs a step (chooses a cell and updates its own board). result contains its step.
@@ -158,6 +161,12 @@ void MultiPlayerFlow::RunRemote() {
         //current client prints its updated board (updated with its opponent step)
         cout << "current board:" << endl << endl;
         board->printBoard();
+
+        if (opponentPlayer == xplayer)
+            cout << "X played (" << ++answerBuffer[0] << "," << ++answerBuffer[2] << ")" << endl;
+        else
+            cout << "O played (" << ++answerBuffer[0] << "," << ++answerBuffer[2] << ")" << endl;
+
     }
     //this code will be done by only one of the clients.
     string endMassage = "END";
